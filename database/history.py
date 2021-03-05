@@ -34,7 +34,7 @@ class History(Database):
                 self._data_dict[data[0]] = literal_eval(Storage(data[1]).un_base64())
 
         if self._table_exists("guild_settings"):
-            lookup = self._lookup_record(f"guilds{self._guild_id}", f"guild_id = {self._guild_id}")
+            lookup = self._lookup_record(f"guild_settings", f"guild_id = {self._guild_id}")
             if lookup:
                 self._settings = {"intro_channel": lookup[0][1], "log_channel": lookup[0][2]}
             else:
@@ -79,7 +79,7 @@ class History(Database):
                 self._add_record(f"g_{self._guild_id}", [("user_id", user_id), ("message_base64", f"'{base64}'")])
 
     def _commit_settings(self):
-        current_setting_guilds = [data[0][0] for data in self._lookup_record(f"guild_settings")]
+        current_setting_guilds = [data[0] for data in self._lookup_record(f"guild_settings")]
         if self._guild_id in current_setting_guilds:
             self._update_record("guild_settings", [
                 ("intro_channel", self._settings["intro_channel"]),
@@ -109,6 +109,9 @@ class History(Database):
 
     def get(self, user_id: int, ids: bool = False) -> int:
         self.check_tables()
+
+        if user_id not in self._data_dict:
+            return 0
 
         if ids:
             return self._data_dict[user_id]
