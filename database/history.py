@@ -23,62 +23,119 @@ from database.storage import Storage
 
 class History(Database):
     """ Class for high-level management of history database """
-    def __init__(self, channel_id: int):
+    def __init__(self, guild_id: int):
         super().__init__("toss")
-        self.channel_id = channel_id
+        self._guild_id = guild_id
+        self._data_dict = {}
 
-        if not self._table_exists(f"c_{channel_id}"):
-            self._make_table(f"c_{channel_id}", [("user_id", "INTEGER PRIMARY KEY"), ("message_base64", "TEXT")])
-            self.data_dict = {}
+        if self._table_exists(f"g_{self._guild_id}"):
+            lookup = self._lookup_record(f"g_{self._guild_id}")
+            for data in lookup:
+                self._data_dict[data[0]] = literal_eval(Storage(data[1]).un_base64())
+
+        if self._table_exists("guild_settings"):
+            lookup = self._lookup_record(f"guilds{self._guild_id}", f"guild_id = {self._guild_id}")
+            if lookup:
+                self._settings = {"intro_channel": lookup[0][1], "log_channel": lookup[0][2]}
+            else:
+                self._settings = {"intro_channel": 0, "log_channel": 0}
 
         else:
-            lookup = self._lookup_record(f"c_{channel_id}")
-            for data in lookup:
-                self.data_dict[data[0]] = literal_eval(Storage(data[1]).un_base64())
+            self._make_table(f"guild_settings", [
+                ("guild_id", "INTEGER PRIMARY KEY"),
+                ("intro_channel", "INTEGER"),
+                ("log_channel", "INTEGER")
+            ])
 
-    def _commit(self, user_id: int = None) -> None:
-        """ Commit changes
+            self.__init__(guild_id)
 
-        :param user_id: The user id to update the info of
-        """
-        current_users = [data[0] for data in self._lookup_record(f"c_{self.channel_id}")]
+    def check_tables(self) -> None:
+        if not self._table_exists(f"g_{self._guild_id}"):
+            self._make_table(f"g_{self._guild_id}", [("user_id", "INTEGER"), ("message_base64", "TEXT")])
+            self._data_dict = {}
+
+            self._settings = {"intro_channel": 0, "log_channel": 0}
+
+    def _commit_user(self, user_id: int = None) -> None:
+        current_users = [data[0] for data in self._lookup_record(f"g_{self._guild_id}")]
 
         if user_id is None:
-            for user_id in self.data_dict:
-                base64 = Storage(str(self.data_dict[user_id])).do_base64()
+            for user_id in self._data_dict:
+                base64 = Storage(str(self._data_dict[user_id])).do_base64()
 
                 if user_id in current_users:
-                    self._update_record(f"c_{self.channel_id}", [("message_base64", f"'{base64}'")], f"user_id = {user_id}")
+                    self._update_record(f"g_{self._guild_id}", [("message_base64", f"'{base64}'")], f"user_id = {user_id}")
 
                 else:
-                    self._add_record(f"c_{self.channel_id}", [("user_id", user_id), ("message_base64", f"'{base64}'")])
+                    self._add_record(f"g_{self._guild_id}", [("user_id", user_id), ("message_base64", f"'{base64}'")])
 
         else:
-            base64 = Storage(str(self.data_dict[user_id])).do_base64()
+            base64 = Storage(str(self._data_dict[user_id])).do_base64()
 
             if user_id in current_users:
-                self._update_record(f"c_{self.channel_id}", [("message_base64", f"'{base64}'")], f"user_id = {user_id}")
+                self._update_record(f"g_{self._guild_id}", [("message_base64", f"'{base64}'")], f"user_id = {user_id}")
 
             else:
-                self._add_record(f"c_{self.channel_id}", [("user_id", user_id), ("message_base64", f"'{base64}'")])
+                self._add_record(f"g_{self._guild_id}", [("user_id", user_id), ("message_base64", f"'{base64}'")])
+
+    def _commit_settings(self):
+        current_setting_guilds = [data[0][0] for data in self._lookup_record(f"guild_settings")]
+        if self._guild_id in current_setting_guilds:
+            self._update_record("guild_settings", [
+                ("intro_channel", self._settings["intro_channel"]),
+                ("log_channel", self._settings["log_channel"])
+            ])
+        else:
+            self._add_record("guild_settings", [
+                ("guild_id", self._guild_id),
+                ("intro_channel", self._settings["intro_channel"]),
+                ("log_channel", self._settings["log_channel"])
+            ])
+
+    def manual_commit(self) -> None:
+        self._commit_user()
+        self._commit_settings()
 
     def add(self, user_id: int, message_id: int, commit: bool = True) -> None:
-        if user_id in self.data_dict:
-            self.data_dict[user_id].append(message_id)
+        self.check_tables()
+
+        if user_id in self._data_dict:
+            self._data_dict[user_id].append(message_id)
         else:
-            self.data_dict[user_id] = [message_id]
+            self._data_dict[user_id] = [message_id]
 
         if commit:
-            self._commit(user_id)
+            self._commit_user(user_id)
+
+    def get(self, user_id: int, ids: bool = False) -> int:
+        self.check_tables()
+
+        if ids:
+            return self._data_dict[user_id]
+        return len(self._data_dict[user_id])
 
     def remove(self, user_id: int, message_id: int, commit: bool = True) -> None:
-        if user_id not in self.data_dict:
+        self.check_tables()
+
+        if user_id not in self._data_dict:
             return
 
-        self.data_dict[user_id].remove(message_id)
+        self._data_dict[user_id].remove(message_id)
 
         if commit:
-            self._commit()
+            self._commit_user()
 
+    def set_channel_intro(self, channel_id: int, commit: bool = True) -> None:
+        self._settings["intro_channel"] = channel_id
 
+        if commit:
+            self._commit_settings()
 
+    def set_channel_log(self, channel_id: int, commit: bool = True) -> None:
+        self._settings["log_channel"] = channel_id
+
+        if commit:
+            self._commit_settings()
+
+    def get_channel(self) -> int:
+        return self._settings["intro_channel"] or 0
