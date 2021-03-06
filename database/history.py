@@ -127,16 +127,20 @@ class History(Database):
 
         return 0
 
-    def remove(self, user_id: int, message_id: int, commit: bool = True) -> None:
+    def remove(self, user_id: int, message_id: int = None, commit: bool = True) -> None:
         self._check_tables()
 
         if user_id not in self._data_dict:
             return
 
-        if message_id not in self._data_dict[user_id]:
-            return
+        if message_id is not None:
+            if message_id not in self._data_dict[user_id]:
+                return
 
-        self._data_dict[user_id].remove(message_id)
+            self._data_dict[user_id].remove(message_id)
+
+        else:
+            del self._data_dict[user_id]
 
         if commit:
             self._commit_user()
