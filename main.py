@@ -61,10 +61,6 @@ async def on_message(message: Message):
     if message.author.bot:
         return
 
-    role = utils.get(message.guild.roles, name="Staff")
-    if role in message.author.roles:
-        return
-
     history = History(message.guild.id)
 
     if history.get_intro_channel() != message.channel.id:
@@ -72,6 +68,11 @@ async def on_message(message: Message):
         return
 
     history.add(message.author.id, message.id)
+
+    role = utils.get(message.guild.roles, name="Staff")
+    if role in message.author.roles:
+        return
+
     total = history.get(message.author.id)
     if total == 1:
         return
@@ -114,6 +115,10 @@ async def on_message_delete(message: Message):
 
     history.remove(message.author.id, message.id)
 
+    role = utils.get(message.guild.roles, name="Staff")
+    if role in message.author.roles:
+        return
+
     e = Embed(colour=0xFF0000)
     e.title = f"Message Deleted"
     e.description = f"`{message.author}` **|** `{message.author.id}`\nA message was deleted, and it was removed from the database."
@@ -140,6 +145,10 @@ async def on_bulk_message_delete(messages: List[Message]):
             return
 
         history.remove(message.author.id, message.id)
+
+        role = utils.get(message.guild.roles, name="Staff")
+        if role in message.author.roles:
+            return
 
         e = Embed(colour=0xFF0000)
         e.title = f"Message Deleted"
