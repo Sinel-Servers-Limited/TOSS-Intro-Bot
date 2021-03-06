@@ -446,6 +446,9 @@ async def search(ctx: commands.Context, threshhold: int = 2):
         except errors.NotFound:
             user = bot.fetch_user(userid[0])
 
+        if user is None:
+            user = await bot.fetch_user(userid[0])
+
         send_message += f"{over_dict[userid[1]]} - {user.mention}"
 
     await msg.edit(content=send_message)
