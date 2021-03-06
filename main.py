@@ -443,7 +443,7 @@ async def search(ctx: commands.Context, threshhold: int = 2):
     send_message = "People over the threshold:\n"
     for userdata in over_dict:
         print(userdata)
-        send_message += f"{over_dict[userdata[1]]} - <@{userdata[0]}>\n"
+        send_message += f"{userdata[1]} - <@{userdata[0]}>\n"
 
     await msg.edit(content=send_message)
 
