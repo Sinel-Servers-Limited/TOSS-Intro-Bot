@@ -243,7 +243,7 @@ async def fetchall(ctx: commands.Context, limit: int = 2000):
     await msg.edit(content="Processing done! Enjoy your new database!")
 
 
-@bot.command()
+@bot.command(aliases=["remove"])
 async def delete(ctx: commands.Context, message_id: int = None):
     """ Removes one from users post count """
     if ctx.author.id not in [246862123328733186]:
@@ -274,7 +274,7 @@ async def delete(ctx: commands.Context, message_id: int = None):
         await ctx.send("Removed the message from the database, but the message was already deleted!")
 
 
-@bot.command()
+@bot.command(aliases=["setintro", "introduction"])
 async def introset(ctx: commands.Context, channel: TextChannel = None):
     """ Sets the intro channel """
     if ctx.author.id not in [246862123328733186]:
@@ -290,7 +290,7 @@ async def introset(ctx: commands.Context, channel: TextChannel = None):
     await ctx.send(f"Set the introduction channel to <#{channel.id}>")
 
 
-@bot.command()
+@bot.command(aliases=["setlog, logging"])
 async def logset(ctx: commands.Context, channel: TextChannel = None):
     """ Sets the log channel """
     if ctx.author.id not in [246862123328733186]:
@@ -357,7 +357,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
         os.remove("./" + str(user.id) + ".txt")
 
 
-@commands.command(aliases=["e", "exec"])
+@bot.command(aliases=["e", "exec"])
 async def execute(ctx: commands.Context, awa: Optional[bool], *, code: str = None):
     if ctx.author.id not in [246862123328733186]:
         await ctx.send(f"{ctx.author.mention}, you can't use this command!")
