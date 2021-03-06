@@ -108,7 +108,7 @@ class History(Database):
         if commit:
             self._commit_user(user_id)
 
-    def get(self, user_id: int, ids: bool = False) -> int:
+    def get(self, user_id: int, ids: bool = False) -> int or list:
         self._check_tables()
 
         if user_id not in self._data_dict:
@@ -138,6 +138,9 @@ class History(Database):
                 return
 
             self._data_dict[user_id].remove(message_id)
+
+            if not self._data_dict[user_id]:
+                del self._data_dict[user_id]
 
         else:
             del self._data_dict[user_id]
