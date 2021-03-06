@@ -257,7 +257,8 @@ async def fetchall(ctx: commands.Context, limit: int = 2000):
 
     await msg.edit(content="History gotten, beginning processing...")
     for entry in entire_history:
-        history.add(entry.author.id, entry.id, commit=False)
+        if not entry.author.bot:
+            history.add(entry.author.id, entry.id, commit=False)
 
     history.manual_commit()
     await msg.edit(content="Processing done! Enjoy your new database!")
@@ -441,7 +442,7 @@ async def search(ctx: commands.Context, threshhold: int = 2):
 
     send_message = "People over the threshold:\n"
     for userid in over_dict:
-        send_message += f"{over_dict[userid[1]]} - <@{userid[0]}>"
+        send_message += f"{over_dict[userid[1]]} - <@{userid[0]}>\n"
 
     await msg.edit(content=send_message)
 
