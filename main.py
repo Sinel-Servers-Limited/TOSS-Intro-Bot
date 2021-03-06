@@ -17,7 +17,7 @@
 # You may contact me at toss@sinelservers.xyz
 
 import os
-from typing import List
+from typing import List, Union
 from discord.ext import commands
 from discord.ext.commands import errors
 from discord import AllowedMentions, Message, Embed, Activity, ActivityType, Member, TextChannel, File, utils
@@ -245,10 +245,13 @@ async def logset(ctx: commands.Context, channel: TextChannel = None):
 
 
 @bot.command()
-async def info(ctx: commands.Context, user: Member = None):
+async def info(ctx: commands.Context, user: Union[Member, int] = None):
     """ Gets a user's intro information """
     if user is None:
         user = ctx.author
+
+    elif type(user) is int:
+        user = bot.fetch_user(user)
 
     history = History(ctx.guild.id)
     e = Embed(color=0xffff00)
