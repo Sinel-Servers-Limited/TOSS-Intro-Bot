@@ -102,7 +102,7 @@ async def on_message(message: Message):
 
 @bot.event
 async def on_raw_message_delete(payload: RawMessageDeleteEvent):
-    history = History(payload.guild_id.id)
+    history = History(payload.guild_id)
     if payload.channel_id != history.get_intro_channel():
         return
 
