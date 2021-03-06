@@ -441,8 +441,9 @@ async def search(ctx: commands.Context, threshhold: int = 2):
     over_dict = sort_dict(over_dict, reverse=False)
 
     send_message = "People over the threshold:\n"
-    for userid in over_dict:
-        send_message += f"{over_dict[userid[1]]} - <@{userid[0]}>\n"
+    for userdata in over_dict:
+        print(userdata)
+        send_message += f"{over_dict[userdata[1]]} - <@{userdata[0]}>\n"
 
     await msg.edit(content=send_message)
 
