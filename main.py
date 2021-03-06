@@ -338,7 +338,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
 
         e.add_field(name="Links", value=message_links_formatted, inline=False)
 
-    if not_in_guild:
+    if not_in_guild and history.get(user.id) != 0:
         e.add_field(name="Guild", value="This user isn't in the guild, consider deleting all their posts!")
 
     await ctx.send(embed=e)
