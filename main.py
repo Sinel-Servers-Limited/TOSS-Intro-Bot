@@ -247,11 +247,13 @@ async def logset(ctx: commands.Context, channel: TextChannel = None):
 @bot.command()
 async def info(ctx: commands.Context, user: Union[Member, int] = None):
     """ Gets a user's intro information """
+    not_in_guild = False
     if user is None:
         user = ctx.author
 
     elif type(user) is int:
         user = bot.fetch_user(user)
+        not_in_guild = True
 
     history = History(ctx.guild.id)
     e = Embed(color=0xffff00)
@@ -277,6 +279,9 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
             message_links_formatted = "Check attached file"
 
         e.add_field(name="Links", value=message_links_formatted, inline=False)
+
+    if not_in_guild:
+        e.add_field(name="Guild", value="This user isn't in the guild, consider deleting all their posts!")
 
     await ctx.send(embed=e)
     if len(message_links_formatted) > 5000:
