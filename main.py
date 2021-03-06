@@ -423,6 +423,7 @@ async def execute(ctx: commands.Context, awa: Optional[bool], *, code: str = Non
 
 @bot.command()
 async def search(ctx: commands.Context, threshhold: int = 2):
+    """ Search for people over the threshhold """
     role = utils.get(ctx.guild.roles, name="Staff")
     if role not in ctx.author.roles:
         await ctx.send("You can't use this command!")
