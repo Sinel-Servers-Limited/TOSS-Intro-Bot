@@ -132,7 +132,7 @@ async def on_raw_message_delete(payload: RawMessageDeleteEvent):
         await log_channel.send(embed=e)
 
     else:
-        guild = await bot.get_guild(payload.guild_id)
+        guild = bot.get_guild(payload.guild_id)
 
         user_id = history.get_from_message_id(payload.message_id)
         if user_id == 0:
@@ -157,12 +157,12 @@ async def on_raw_bulk_message_delete(payload: RawBulkMessageDeleteEvent):
     cached_msg_ids = set([message.id for message in payload.cached_messages])
     non_cached_msg_ids = payload.message_ids - cached_msg_ids
 
-    history = History(payload.guild_id.id)
+    history = History(payload.guild_id)
     if payload.channel_id != history.get_intro_channel():
         return
 
     for message_id in non_cached_msg_ids:
-        guild = await bot.get_guild(payload.guild_id)
+        guild = bot.get_guild(payload.guild_id)
 
         user_id = history.get_from_message_id(message_id)
         if user_id == 0:
