@@ -442,11 +442,11 @@ async def search(ctx: commands.Context, threshhold: int = 2):
     send_message = "People over the threshold:\n"
     for userid in over_dict:
         try:
-            user = ctx.guild.get_member(userid)
+            user = ctx.guild.get_member(userid[0])
         except errors.NotFound:
-            user = bot.fetch_user(userid)
+            user = bot.fetch_user(userid[0])
 
-        send_message += f"{over_dict[userid]} - {user.mention}"
+        send_message += f"{over_dict[userid[1]]} - {user.mention}"
 
     await msg.edit(content=send_message)
 
