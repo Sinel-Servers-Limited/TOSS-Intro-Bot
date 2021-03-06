@@ -166,15 +166,21 @@ async def on_raw_message_delete(payload: RawMessageDeleteEvent):
         user_id = history.get_from_message_id(payload.message_id)
         if user_id == 0:
             return
+        try:
+            user = await bot.fetch_user(user_id)
+            user_id = user.id
+            user_url = user.avatar_url
+        except errors.NotFound:
+            user = "Deleted User#0000"
+            user_url = "https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png"
 
-        user = await bot.fetch_user(user_id)
         history.remove(user_id, payload.message_id)
 
         e = Embed(colour=0xFF0000)
         e.title = f"Message Deleted"
-        e.description = f"`{user}` **|** `{user.id}` **|** Not cached\nA message was deleted, and it was removed from the database."
+        e.description = f"`{user}` **|** `{user_id}` **|** Not cached\nA message was deleted, and it was removed from the database."
         e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id})")
-        e.set_thumbnail(url=user.avatar_url)
+        e.set_thumbnail(url=user_url)
         e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
 
         log_channel = guild.get_channel(history.get_log_channel())
@@ -197,14 +203,21 @@ async def on_raw_bulk_message_delete(payload: RawBulkMessageDeleteEvent):
         if user_id == 0:
             return
 
-        user = await bot.fetch_user(user_id)
+        try:
+            user = await bot.fetch_user(user_id)
+            user_id = user.id
+            user_url = user.avatar_url
+        except errors.NotFound:
+            user = "Deleted User#0000"
+            user_url = "https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png"
+
         history.remove(user_id, message_id)
 
         e = Embed(colour=0xFF0000)
         e.title = f"Message Deleted"
-        e.description = f"`{user}` **|** `{user.id}` **|** Not cached\nA message was deleted, and it was removed from the database."
+        e.description = f"`{user}` **|** `{user_id}` **|** Not cached\nA message was deleted, and it was removed from the database."
         e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{message_id})")
-        e.set_thumbnail(url=user.avatar_url)
+        e.set_thumbnail(url=user_url)
         e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
 
         log_channel = guild.get_channel(history.get_log_channel())
@@ -379,7 +392,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
                 message_links_formatted = ""
                 e = Embed(color=0xffff00)
                 e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
-                e.title = f"`Deleted User`'s intro information"
+                e.title = f"`Deleted User#0000`'s intro information"
                 e.description = None
                 e.set_thumbnail(url="https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png")
 
