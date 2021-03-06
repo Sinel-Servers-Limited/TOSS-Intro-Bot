@@ -317,7 +317,7 @@ async def deleteuser(ctx: commands.Context, user_id: int = None):
 
     channel = ctx.guild.get_channel(history.get_intro_channel())
     for msgid in ids:
-        message = channel.fetch_message(msgid)
+        message = await channel.fetch_message(msgid)
         message.delete()
 
     history.remove(user_id)
