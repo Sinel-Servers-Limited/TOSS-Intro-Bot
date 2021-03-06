@@ -345,11 +345,10 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
                 await ctx.send("That's not a valid user!")
                 return
             else:
-                message_ids = "\n".join(history.get(user, True)) # noqa
+                message_ids = "\n".join([str(id) for id in history.get(user, True)]) # noqa
                 await ctx.send(f"This user is deleted, the command can't be processed!\nMessage ids:```\n{message_ids}```")
 
         not_in_guild = True
-
 
     e = Embed(color=0xffff00)
     e.title = f"`{user}`'s intro information"
