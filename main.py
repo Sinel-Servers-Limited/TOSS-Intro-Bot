@@ -252,7 +252,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
         user = ctx.author
 
     elif type(user) is int:
-        user = bot.fetch_user(user)
+        user = await bot.fetch_user(user)
         not_in_guild = True
 
     history = History(ctx.guild.id)
