@@ -20,7 +20,7 @@ import os
 from typing import List
 from discord.ext import commands
 from discord.ext.commands import errors
-from discord import AllowedMentions, Message, Embed, Activity, ActivityType, Member, TextChannel, File
+from discord import AllowedMentions, Message, Embed, Activity, ActivityType, Member, TextChannel, File, utils
 from database.history import History
 
 # Enable colors on windows
@@ -59,6 +59,10 @@ async def on_message(message: Message):
         return
 
     if message.author.bot:
+        return
+
+    role = utils.get(message.guild.roles, name="Staff")
+    if role in message.author.roles:
         return
 
     history = History(message.guild.id)
