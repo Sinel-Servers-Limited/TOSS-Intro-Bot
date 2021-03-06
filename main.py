@@ -366,6 +366,8 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
         user = ctx.author
 
     elif type(user) is int:
+        not_in_guild = True
+        
         try:
             user = await bot.fetch_user(user)
         except errors.NotFound:
@@ -374,10 +376,28 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
                 await ctx.send("That's not a valid user!")
                 return
             else:
-                message_ids = "\n".join([str(id) for id in history.get(user, True)]) # noqa
-                await ctx.send(f"This user is deleted, the command can't be processed!\nMessage ids:```\n{message_ids}```")
+                message_links_formatted = ""
+                e = Embed(color=0xffff00)
+                e.title = f"`Deleted User`'s intro information"
+                e.description = None
+                e.set_thumbnail(url="https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png")
 
-        not_in_guild = True
+                for index, message_id in enumerate(history.get(user, ids=True)):
+                    message_links_formatted += f"[{index + 1}: {message_id}](https://discord.com/channels/{ctx.guild.id}/{history.get_intro_channel()}/{message_id})\n"
+
+                if len(message_links_formatted) > 5000:
+                    with open(f"./{user.id}.txt", "w+") as fp:
+                        fp.write(message_links_formatted)
+
+                    message_links_formatted = "Check attached file"
+
+                e.add_field(name="Links", value=message_links_formatted, inline=False)
+
+                await ctx.send(embed=e)
+
+                if len(message_links_formatted) > 5000:
+                    await ctx.send(file=File("./" + str(user.id) + ".txt"))
+                    remove("./" + str(user.id) + ".txt")
 
     e = Embed(color=0xffff00)
     e.title = f"`{user}`'s intro information"
