@@ -38,8 +38,8 @@ def string_pop(string: str, topop: int):
     return "".join(string)
 
 
-def sort_dict(dictionary: dict, num: int = 10000000000000000, full: bool = True):
-    topx = {k: v for k, v in sorted(dictionary.items(), key=itemgetter(1), reverse=True)[:num]}
+def sort_dict(dictionary: dict, num: int = 10000000000000000, full: bool = True, reverse: bool = True):
+    topx = {k: v for k, v in sorted(dictionary.items(), key=itemgetter(1), reverse=reverse)[:num]}
 
     return_list = []
     for key in topx:
@@ -438,7 +438,7 @@ async def search(ctx: commands.Context, threshhold: int = 2):
         await msg.edit(content="There's nobody over the threshold!")
         return
 
-    over_dict = sort_dict(over_dict)
+    over_dict = sort_dict(over_dict, reverse=False)
 
     send_message = "People over the threshold:\n"
     for userid in over_dict:
