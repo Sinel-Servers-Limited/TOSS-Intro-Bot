@@ -100,7 +100,8 @@ class History(Database):
         self.check_tables()
 
         if user_id in self._data_dict:
-            self._data_dict[user_id].append(message_id)
+            if message_id not in self._data_dict[user_id]:
+                self._data_dict[user_id].append(message_id)
         else:
             self._data_dict[user_id] = [message_id]
 
@@ -121,6 +122,9 @@ class History(Database):
         self.check_tables()
 
         if user_id not in self._data_dict:
+            return
+
+        if message_id not in self._data_dict[user_id]:
             return
 
         self._data_dict[user_id].remove(message_id)
