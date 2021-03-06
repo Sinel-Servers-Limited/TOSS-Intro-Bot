@@ -20,6 +20,7 @@ import os
 from typing import Union
 from discord.ext import commands
 from discord.ext.commands import errors
+from discord.errors import NotFound
 from discord import AllowedMentions, Message, RawMessageDeleteEvent, RawBulkMessageDeleteEvent, \
     Embed, Activity, ActivityType, Member, TextChannel, File, utils
 from database.history import History
@@ -294,7 +295,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
     elif type(user) is int:
         try:
             user = await bot.fetch_user(user)
-        except errors.NotFound: # noqa
+        except NotFound:
             await ctx.send("That's not a valid user!")
             return
 
