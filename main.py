@@ -328,13 +328,17 @@ async def deleteuser(ctx: commands.Context, user_id: int = None):
         await ctx.send("Please give a user that exists in the database!")
         return
 
+    msg = await ctx.send("Deleting user...")
     channel = ctx.guild.get_channel(history.get_intro_channel())
     for msgid in ids:
-        message = await channel.fetch_message(msgid)
+        try:
+            message = await channel.fetch_message(msgid)
+        except errors.NotFound:
+            continue
         await message.delete()
 
     history.remove(user_id)
-    await ctx.send("Removed the user!")
+    await msg.edit(content="Removed the user!")
 
 
 @bot.command(aliases=["setintro", "introduction"])
