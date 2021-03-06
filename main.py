@@ -245,7 +245,7 @@ async def delete(ctx: commands.Context, message_id: int = None):
 
     history = History(ctx.guild.id)
 
-    channel = ctx.guild.get_intro_channel(history.get_intro_channel())
+    channel = ctx.guild.get_channel(history.get_intro_channel())
     try:
         message = channel.get_message(message_id)
         history.remove(message.author.id, message.id)
