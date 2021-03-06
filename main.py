@@ -263,6 +263,7 @@ async def delete(ctx: commands.Context, message_id: int = None):
 
         await ctx.send("Removed the message from the database, but the message was already deleted!")
 
+
 @bot.command()
 async def introset(ctx: commands.Context, channel: TextChannel = None):
     """ Sets the intro channel """
@@ -315,6 +316,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
     e = Embed(color=0xffff00)
     e.title = f"`{user}`'s intro information"
     e.description = None
+    e.set_thumbnail(url=user.avatar_url)
 
     if history.get(user.id) == 0:
         e.add_field(name="Intro information", value="This person hasn't posted an introduction!", inline=False)
