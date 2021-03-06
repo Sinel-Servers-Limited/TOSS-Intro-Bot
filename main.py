@@ -17,16 +17,24 @@
 # You may contact me at toss@sinelservers.xyz
 
 import os
-from typing import Union
+import io
+import contextlib
+import traceback
+from typing import Union, Optional
 from discord.ext import commands
-from discord.ext.commands import errors
-from discord.errors import NotFound
+from discord import errors
 from discord import AllowedMentions, Message, RawMessageDeleteEvent, RawBulkMessageDeleteEvent, \
     Embed, Activity, ActivityType, Member, TextChannel, File, utils
 from database.history import History
 
 
 bot = commands.Bot(command_prefix="i! ", allowed_mentions=AllowedMentions(roles=False, everyone=False))
+
+
+def string_pop(string: str, topop: int):
+    string = list(string)
+    string.pop(topop)
+    return "".join(string)
 
 
 @bot.event
@@ -39,11 +47,11 @@ async def on_ready():
 
 
 @bot.event
-async def on_command_error(ctx: Member, error: errors):
-    if isinstance(error, errors.MemberNotFound):
+async def on_command_error(ctx: Member, error):
+    if isinstance(error, commands.errors.MemberNotFound):
         await ctx.send("That's not a valid member!")
         return
-    if isinstance(error, errors.CommandNotFound):
+    if isinstance(error, commands.errors.CommandNotFound):
         return
     raise error
 
@@ -255,7 +263,7 @@ async def delete(ctx: commands.Context, message_id: int = None):
         await message.delete()
         await ctx.send("Removed the message from the database, and deleted the message!")
 
-    except NotFound:
+    except errors.NotFound:
         user_id = history.get_from_message_id(message_id)
         if user_id == 0:
             await ctx.send("That's not a valid message id!")
@@ -308,7 +316,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
     elif type(user) is int:
         try:
             user = await bot.fetch_user(user)
-        except NotFound:
+        except errors.NotFound:
             await ctx.send("That's not a valid user!")
             return
 
@@ -347,6 +355,49 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
     if len(message_links_formatted) > 5000:
         await ctx.send(file=File("./" + str(user.id) + ".txt"))
         os.remove("./" + str(user.id) + ".txt")
+
+
+@commands.command(aliases=["e", "exec"])
+async def execute(ctx: commands.Context, awa: Optional[bool], *, code: str = None):
+    if ctx.author.id not in [246862123328733186]:
+        await ctx.send(f"{ctx.author.mention}, you can't use this command!")
+        return
+
+    if code is None:
+        await ctx.send(f"Please supply some code!")
+        return
+
+    if code.startswith("```py"):
+        code = string_pop(code, 0)
+        code = string_pop(code, 0)
+        code = string_pop(code, 0)  # Yes i know it's bad, but it works
+        code = string_pop(code, 0)
+        code = string_pop(code, 0)
+
+    if code.endswith("```"):
+        code = string_pop(code, -1)
+        code = string_pop(code, -1)
+        code = string_pop(code, -1)
+
+    str_obj = io.StringIO()  # Retrieves a stream of data
+    try:
+        with contextlib.redirect_stdout(str_obj):
+            await exec(code) if awa else exec(code)
+    except Exception as e:
+        formatted_exception_list = traceback.format_exception(type(e), e, e.__traceback__)
+        formatted_exception_list.pop(1)
+        formatted_exception = ""
+        for line in formatted_exception_list:
+            formatted_exception += line
+        return await ctx.send(f"{ctx.author.mention}, An exception occured!\n```{formatted_exception}```")
+    if str_obj.getvalue() == "":
+        await ctx.send(f'{ctx.author.mention}, the run completed succesfully with no output!')
+    else:
+        try:
+            await ctx.send(
+                f'{ctx.author.mention}, the run completed succesfully, heres the output:\n```{str_obj.getvalue()}```')
+        except errors.HTTPException:
+            await ctx.send(f"{ctx.author.mention}, the run completed succesfully but the output was too long to send!")
 
 
 if __name__ == "__main__":
