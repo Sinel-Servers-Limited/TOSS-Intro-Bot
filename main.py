@@ -400,6 +400,8 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
                     await ctx.send(file=File("./" + str(user.id) + ".txt"))
                     remove("./" + str(user.id) + ".txt")
 
+                return
+
     e = Embed(color=0xffff00)
     e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
     e.title = f"`{user}`'s intro information"
