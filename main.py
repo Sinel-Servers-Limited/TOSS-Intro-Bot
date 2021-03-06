@@ -273,6 +273,7 @@ async def delete(ctx: commands.Context, message_id: int = None):
 
     if message_id is None:
         await ctx.send("Please give a message ID to delete!")
+        return
 
     history = History(ctx.guild.id)
 
@@ -294,6 +295,27 @@ async def delete(ctx: commands.Context, message_id: int = None):
 
         await ctx.send("Removed the message from the database, but the message was already deleted!")
 
+
+@bot.command(aliases=["removeuser"])
+async def deleteuser(ctx: commands.Context, user_id: int = None):
+    """ Removes user from the database """
+    if ctx.author.id not in [246862123328733186]:
+        await ctx.send("Hey, you can't use this!")
+        return
+
+    if user_id is None:
+        await ctx.send("Please give a user ID to delete!")
+        return
+
+    history = History(ctx.guild.id)
+
+    if history.get(user_id) == 0:
+        await ctx.send("Please give a user that exists in the database!")
+        return
+
+    history.remove(user_id)
+    await ctx.send("Removed the user!")
+    
 
 @bot.command(aliases=["setintro", "introduction"])
 async def introset(ctx: commands.Context, channel: TextChannel = None):
