@@ -516,11 +516,14 @@ async def search(ctx: commands.Context, threshhold: int = 2):
 
     over_dict = sort_dict(over_dict, reverse=False)
 
-    send_message = "People over the threshold:\n"
+    send_message = f"People over the threshold of `{threshhold}`:\n"
     for userdata in over_dict:
         send_message += f"{userdata[1]} - <@{userdata[0]}>\n"
 
-    await msg.edit(content=send_message)
+    try:
+        await msg.edit(content=send_message)
+    except errors.HTTPException:
+        await msg.edit(content="The people over is too big, please try a higher threshold!")
 
 
 if __name__ == "__main__":
