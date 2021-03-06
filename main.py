@@ -324,7 +324,7 @@ async def deleteuser(ctx: commands.Context, user_id: int = None):
 
     ids = history.get(user_id, ids=True)
 
-    if len(ids) == 0:
+    if ids == 0:
         await ctx.send("Please give a user that exists in the database!")
         return
 
