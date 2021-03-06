@@ -124,6 +124,7 @@ async def on_raw_message_delete(payload: RawMessageDeleteEvent):
         if message.attachments:
             urls = "\n".join([attachment.url for attachment in message.attachments])
             e.add_field(name="Attachments", value=urls, inline=False)
+        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})")
         e.set_thumbnail(url=message.author.avatar_url)
         e.timestamp = message.created_at
         e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
@@ -144,7 +145,7 @@ async def on_raw_message_delete(payload: RawMessageDeleteEvent):
         e = Embed(colour=0xFF0000)
         e.title = f"Message Deleted"
         e.description = f"`{user}` **|** `{user.id}` **|** Not cached)\nA message was deleted, and it was removed from the database."
-        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/{payload.guild_id}/{payload.channel_id}/{payload.message_id})")
+        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{payload.message_id})")
         e.set_thumbnail(url=user.avatar_url)
         e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
 
@@ -174,7 +175,7 @@ async def on_raw_bulk_message_delete(payload: RawBulkMessageDeleteEvent):
         e = Embed(colour=0xFF0000)
         e.title = f"Message Deleted"
         e.description = f"`{user}` **|** `{user.id}` **|** Not cached)\nA message was deleted, and it was removed from the database."
-        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/{payload.guild_id}/{payload.channel_id}/{message_id})")
+        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/channels/{payload.guild_id}/{payload.channel_id}/{message_id})")
         e.set_thumbnail(url=user.avatar_url)
         e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
 
@@ -198,6 +199,7 @@ async def on_raw_bulk_message_delete(payload: RawBulkMessageDeleteEvent):
         if message.attachments:
             urls = "\n".join([attachment.url for attachment in message.attachments])
             e.add_field(name="Attachments", value=urls, inline=False)
+        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/channels/{message.guild.id}/{message.channel.id}/{message.id})")
         e.set_thumbnail(url=message.author.avatar_url)
         e.timestamp = message.created_at
         e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
