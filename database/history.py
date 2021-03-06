@@ -49,7 +49,7 @@ class History(Database):
 
             self.__init__(guild_id)
 
-    def check_tables(self) -> None:
+    def _check_tables(self) -> None:
         if not self._table_exists(f"g_{self._guild_id}"):
             self._make_table(f"g_{self._guild_id}", [("user_id", "INTEGER"), ("message_base64", "TEXT")])
             self._data_dict = {}
@@ -97,7 +97,7 @@ class History(Database):
         self._commit_settings()
 
     def add(self, user_id: int, message_id: int, commit: bool = True) -> None:
-        self.check_tables()
+        self._check_tables()
 
         if user_id in self._data_dict:
             if message_id not in self._data_dict[user_id]:
@@ -109,7 +109,7 @@ class History(Database):
             self._commit_user(user_id)
 
     def get(self, user_id: int, ids: bool = False) -> int:
-        self.check_tables()
+        self._check_tables()
 
         if user_id not in self._data_dict:
             return 0
@@ -119,7 +119,7 @@ class History(Database):
         return len(self._data_dict[user_id])
 
     def get_from_message_id(self, message_id: int) -> int:
-        self.check_tables()
+        self._check_tables()
 
         for user_id in self._data_dict:
             if message_id in self._data_dict[user_id]:
@@ -128,7 +128,7 @@ class History(Database):
         return 0
 
     def remove(self, user_id: int, message_id: int, commit: bool = True) -> None:
-        self.check_tables()
+        self._check_tables()
 
         if user_id not in self._data_dict:
             return
@@ -158,3 +158,13 @@ class History(Database):
 
     def get_log_channel(self) -> int:
         return self._settings["log_channel"] or 0
+
+    def show_over_threshhold(self, threshold: int) -> dict:
+        self._check_tables()
+        above_threshold_list = {}
+
+        for user_id in self._data_dict:
+            if len(self._data_dict[user_id]) >= threshold:
+                above_threshold_list[user_id] = len(self._data_dict[user_id])
+
+        return above_threshold_list

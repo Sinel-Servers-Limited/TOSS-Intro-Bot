@@ -16,10 +16,11 @@
 
 # You may contact me at toss@sinelservers.xyz
 
-import os
-import io
-import contextlib
-import traceback
+from os import remove, environ
+from io import StringIO
+from contextlib import redirect_stdout
+from traceback import format_exception
+from operator import itemgetter
 from typing import Union, Optional
 from discord.ext import commands
 from discord import errors
@@ -35,6 +36,25 @@ def string_pop(string: str, topop: int):
     string = list(string)
     string.pop(topop)
     return "".join(string)
+
+
+def sort_dict(dictionary: dict, num: int = 10000000000000000, full: bool = True):
+    topx = {k: v for k, v in sorted(dictionary.items(), key=itemgetter(1), reverse=True)[:num]}
+
+    return_list = []
+    for key in topx:
+        return_list.append((key, dictionary[key]))
+
+    if not full:
+        try:
+            return return_list[0][0]
+        except IndexError:
+            return None
+
+    else:
+        if num == 1:
+            return return_list[0] if len(return_list) != 0 else {}
+        return return_list
 
 
 @bot.event
@@ -105,7 +125,7 @@ async def on_message(message: Message):
     await log_channel.send(embed=e)
     if len(message_links_formatted) > 5000:
         await log_channel.send(file=File("./" + str(message.author.id) + ".txt"))
-        os.remove("./" + str(message.author.id) + ".txt")
+        remove("./" + str(message.author.id) + ".txt")
 
 
 @bot.event
@@ -354,11 +374,12 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
     await ctx.send(embed=e)
     if len(message_links_formatted) > 5000:
         await ctx.send(file=File("./" + str(user.id) + ".txt"))
-        os.remove("./" + str(user.id) + ".txt")
+        remove("./" + str(user.id) + ".txt")
 
 
 @bot.command(aliases=["e", "exec"])
 async def execute(ctx: commands.Context, awa: Optional[bool], *, code: str = None):
+    """ Executes python code """
     if ctx.author.id not in [246862123328733186]:
         await ctx.send(f"{ctx.author.mention}, you can't use this command!")
         return
@@ -379,12 +400,12 @@ async def execute(ctx: commands.Context, awa: Optional[bool], *, code: str = Non
         code = string_pop(code, -1)
         code = string_pop(code, -1)
 
-    str_obj = io.StringIO()  # Retrieves a stream of data
+    str_obj = StringIO()  # Retrieves a stream of data
     try:
-        with contextlib.redirect_stdout(str_obj):
+        with redirect_stdout(str_obj):
             await exec(code) if awa else exec(code)
     except Exception as e:
-        formatted_exception_list = traceback.format_exception(type(e), e, e.__traceback__)
+        formatted_exception_list = format_exception(type(e), e, e.__traceback__)
         formatted_exception_list.pop(1)
         formatted_exception = ""
         for line in formatted_exception_list:
@@ -400,5 +421,34 @@ async def execute(ctx: commands.Context, awa: Optional[bool], *, code: str = Non
             await ctx.send(f"{ctx.author.mention}, the run completed succesfully but the output was too long to send!")
 
 
+@bot.command()
+async def search(ctx: commands.Context, threshhold: int = 2):
+    role = utils.get(ctx.guild.roles, name="Staff")
+    if role not in ctx.author.roles:
+        await ctx.send("You can't use this command!")
+        return
+
+    history = History(ctx.guild.id)
+    msg = await ctx.send(f"Searching for people over and/or equal to `{threshhold}`")
+    over_dict = history.show_over_threshhold(threshhold)
+
+    if over_dict == {}:
+        await msg.edit(content="There's nobody over the threshold!")
+        return
+
+    over_dict = sort_dict(over_dict)
+
+    send_message = "People over the threshold:\n"
+    for userid in over_dict:
+        try:
+            user = ctx.guild.get_member(userid)
+        except errors.NotFound:
+            user = bot.fetch_user(userid)
+
+        send_message += f"{over_dict[userid]} - {user.mention}"
+
+    await msg.edit(content=send_message)
+
+
 if __name__ == "__main__":
-    bot.run(os.environ["DISCORD_TOSS_TOKEN"])
+    bot.run(environ["DISCORD_TOSS_TOKEN"])
