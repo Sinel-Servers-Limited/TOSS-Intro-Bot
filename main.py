@@ -246,12 +246,22 @@ async def delete(ctx: commands.Context, message_id: int = None):
     history = History(ctx.guild.id)
 
     channel = ctx.guild.get_intro_channel(history.get_intro_channel())
-    message = channel.get_message(message_id)
-    history.remove(message.author.id, message.id)
+    try:
+        message = channel.get_message(message_id)
+        history.remove(message.author.id, message.id)
 
-    await message.delete()
-    await ctx.send("Removed the message!")
+        await message.delete()
+        await ctx.send("Removed the message from the database, and deleted the message!")
 
+    except NotFound:
+        user_id = history.get_from_message_id(message_id)
+        if user_id == 0:
+            await ctx.send("That's not a valid message id!")
+            return
+
+        history.remove(user_id, message_id)
+
+        await ctx.send("Removed the message from the database, but the message was already deleted!")
 
 @bot.command()
 async def introset(ctx: commands.Context, channel: TextChannel = None):
