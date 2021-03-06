@@ -292,7 +292,12 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
         user = ctx.author
 
     elif type(user) is int:
-        user = await bot.fetch_user(user)
+        try:
+            user = await bot.fetch_user(user)
+        except errors.NotFound: # noqa
+            await ctx.send("That's not a valid user!")
+            return
+
         not_in_guild = True
 
     history = History(ctx.guild.id)
