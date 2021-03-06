@@ -367,7 +367,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
 
     elif type(user) is int:
         not_in_guild = True
-        
+
         try:
             user = await bot.fetch_user(user)
         except errors.NotFound:
@@ -378,6 +378,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
             else:
                 message_links_formatted = ""
                 e = Embed(color=0xffff00)
+                e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
                 e.title = f"`Deleted User`'s intro information"
                 e.description = None
                 e.set_thumbnail(url="https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png")
@@ -400,6 +401,7 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
                     remove("./" + str(user.id) + ".txt")
 
     e = Embed(color=0xffff00)
+    e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
     e.title = f"`{user}`'s intro information"
     e.description = None
     e.set_thumbnail(url=user.avatar_url)
