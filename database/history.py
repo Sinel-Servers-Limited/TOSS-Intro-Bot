@@ -140,5 +140,8 @@ class History(Database):
         if commit:
             self._commit_settings()
 
-    def get_channel(self) -> int:
+    def get_intro_channel(self) -> int:
         return self._settings["intro_channel"] or 0
+
+    def get_log_channel(self) -> int:
+        return self._settings["log_channel"] or 0
