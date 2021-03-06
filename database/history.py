@@ -118,6 +118,15 @@ class History(Database):
             return self._data_dict[user_id]
         return len(self._data_dict[user_id])
 
+    def get_from_message_id(self, message_id: int) -> int:
+        self.check_tables()
+
+        for user_id in self._data_dict:
+            if message_id in self._data_dict[user_id]:
+                return user_id
+
+        return 0
+
     def remove(self, user_id: int, message_id: int, commit: bool = True) -> None:
         self.check_tables()
 

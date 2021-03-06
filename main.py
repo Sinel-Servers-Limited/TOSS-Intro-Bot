@@ -17,15 +17,12 @@
 # You may contact me at toss@sinelservers.xyz
 
 import os
-from typing import List, Union
+from typing import Union
 from discord.ext import commands
 from discord.ext.commands import errors
-from discord import AllowedMentions, Message, Embed, Activity, ActivityType, Member, TextChannel, File, utils
+from discord import AllowedMentions, Message, RawMessageDeleteEvent, RawBulkMessageDeleteEvent, \
+    Embed, Activity, ActivityType, Member, TextChannel, File, utils
 from database.history import History
-
-# Enable colors on windows
-if os.name == "nt":
-    os.system("color")
 
 
 bot = commands.Bot(command_prefix="i! ", allowed_mentions=AllowedMentions(roles=False, everyone=False))
@@ -45,10 +42,8 @@ async def on_command_error(ctx: Member, error: errors):
     if isinstance(error, errors.MemberNotFound):
         await ctx.send("That's not a valid member!")
         return
-
     if isinstance(error, errors.CommandNotFound):
         return
-
     raise error
 
 
@@ -105,42 +100,87 @@ async def on_message(message: Message):
 
 
 @bot.event
-async def on_message_delete(message: Message):
-    history = History(message.guild.id)
-    if message.channel.id != history.get_intro_channel():
+async def on_raw_message_delete(payload: RawMessageDeleteEvent):
+    history = History(payload.guild_id.id)
+    if payload.channel_id != history.get_intro_channel():
         return
 
-    if message.author.bot:
-        return
+    if payload.cached_message:
+        message = payload.cached_message
+        if message.author.bot:
+            return
 
-    history.remove(message.author.id, message.id)
+        history.remove(message.author.id, message.id)
 
-    role = utils.get(message.guild.roles, name="Staff")
-    if role in message.author.roles:
-        return
+        role = utils.get(message.guild.roles, name="Staff")
+        if role in message.author.roles:
+            return
 
-    e = Embed(colour=0xFF0000)
-    e.title = f"Message Deleted"
-    e.description = f"`{message.author}` **|** `{message.author.id}`\nA message was deleted, and it was removed from the database."
-    e.add_field(name="Content", value=message.content, inline=False)
-    if message.attachments:
-        urls = "\n".join([attachment.url for attachment in message.attachments])
-        e.add_field(name="Attachments", value=urls, inline=False)
-    e.set_thumbnail(url=message.author.avatar_url)
-    e.timestamp = message.created_at
-    e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
+        e = Embed(colour=0xFF0000)
+        e.title = f"Message Deleted"
+        e.description = f"`{message.author}` **|** `{message.author.id}`\nA message was deleted, and it was removed from the database."
+        e.add_field(name="Content", value=message.content, inline=False)
+        if message.attachments:
+            urls = "\n".join([attachment.url for attachment in message.attachments])
+            e.add_field(name="Attachments", value=urls, inline=False)
+        e.set_thumbnail(url=message.author.avatar_url)
+        e.timestamp = message.created_at
+        e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
 
-    log_channel = message.guild.get_channel(history.get_log_channel())
-    await log_channel.send(embed=e)
+        log_channel = message.guild.get_channel(history.get_log_channel())
+        await log_channel.send(embed=e)
+
+    else:
+        guild = await bot.get_guild(payload.guild_id)
+
+        user_id = history.get_from_message_id(payload.message_id)
+        if user_id == 0:
+            return
+
+        user = await bot.fetch_user(user_id)
+        history.remove(user_id, payload.message_id)
+
+        e = Embed(colour=0xFF0000)
+        e.title = f"Message Deleted"
+        e.description = f"`{user}` **|** `{user.id}` **|** Not cached)\nA message was deleted, and it was removed from the database."
+        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/{payload.guild_id}/{payload.channel_id}/{payload.message_id})")
+        e.set_thumbnail(url=user.avatar_url)
+        e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
+
+        log_channel = guild.get_channel(history.get_log_channel())
+        await log_channel.send(embed=e)
 
 
 @bot.event
-async def on_bulk_message_delete(messages: List[Message]):
-    for message in messages:
-        history = History(message.guild.id)
-        if message.channel.id != history.get_intro_channel():
+async def on_raw_bulk_message_delete(payload: RawBulkMessageDeleteEvent):
+    cached_msg_ids = set([message.id for message in payload.cached_messages])
+    non_cached_msg_ids = payload.message_ids - cached_msg_ids
+
+    history = History(payload.guild_id.id)
+    if payload.channel_id != history.get_intro_channel():
+        return
+
+    for message_id in non_cached_msg_ids:
+        guild = await bot.get_guild(payload.guild_id)
+
+        user_id = history.get_from_message_id(message_id)
+        if user_id == 0:
             return
 
+        user = await bot.fetch_user(user_id)
+        history.remove(user_id, message_id)
+
+        e = Embed(colour=0xFF0000)
+        e.title = f"Message Deleted"
+        e.description = f"`{user}` **|** `{user.id}` **|** Not cached)\nA message was deleted, and it was removed from the database."
+        e.add_field(name="Link", value=f"[Link to message (won't work)](https://discord.com/{payload.guild_id}/{payload.channel_id}/{message_id})")
+        e.set_thumbnail(url=user.avatar_url)
+        e.set_footer(text="TOSS Intro Bot made by Joyte", icon_url=bot.joy_url)
+
+        log_channel = guild.get_channel(history.get_log_channel())
+        await log_channel.send(embed=e)
+
+    for message in payload.cached_messages:
         if message.author.bot:
             return
 
