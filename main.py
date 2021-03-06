@@ -331,6 +331,8 @@ async def logset(ctx: commands.Context, channel: TextChannel = None):
 async def info(ctx: commands.Context, user: Union[Member, int] = None):
     """ Gets a user's intro information """
     not_in_guild = False
+    history = History(ctx.guild.id)
+
     if user is None:
         user = ctx.author
 
@@ -338,12 +340,17 @@ async def info(ctx: commands.Context, user: Union[Member, int] = None):
         try:
             user = await bot.fetch_user(user)
         except errors.NotFound:
-            await ctx.send("That's not a valid user!")
-            return
+            history.get(user)
+            if history.get(user) == 0:
+                await ctx.send("That's not a valid user!")
+                return
+            else:
+                message_ids = "\n".join(history.get(user, True)) # noqa
+                await ctx.send(f"This user is deleted, the command can't be processed!\nMessage ids:```\n{message_ids}```")
 
         not_in_guild = True
 
-    history = History(ctx.guild.id)
+
     e = Embed(color=0xffff00)
     e.title = f"`{user}`'s intro information"
     e.description = None
