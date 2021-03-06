@@ -247,7 +247,7 @@ async def delete(ctx: commands.Context, message_id: int = None):
 
     channel = ctx.guild.get_channel(history.get_intro_channel())
     try:
-        message = channel.fetch_message(message_id)
+        message = await channel.fetch_message(message_id)
         history.remove(message.author.id, message.id)
 
         await message.delete()
