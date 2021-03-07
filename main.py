@@ -280,8 +280,9 @@ async def fetchall(ctx: commands.Context, limit: int = 2000):
 @bot.command(aliases=["remove"])
 async def delete(ctx: commands.Context, message_id: int = None):
     """ Removes one from users post count """
-    if ctx.author.id not in [246862123328733186]:
-        await ctx.send("Hey, you can't use this!")
+    role = utils.get(ctx.guild.roles, name="Staff")
+    if role not in ctx.author.roles:
+        await ctx.send("You can't use this command!")
         return
 
     if message_id is None:
@@ -312,8 +313,9 @@ async def delete(ctx: commands.Context, message_id: int = None):
 @bot.command(aliases=["removeuser"])
 async def deleteuser(ctx: commands.Context, user_id: int = None):
     """ Removes user from the database """
-    if ctx.author.id not in [246862123328733186]:
-        await ctx.send("Hey, you can't use this!")
+    role = utils.get(ctx.guild.roles, name="Staff")
+    if role not in ctx.author.roles:
+        await ctx.send("You can't use this command!")
         return
 
     if user_id is None:
