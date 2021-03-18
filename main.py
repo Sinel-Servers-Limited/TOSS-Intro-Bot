@@ -264,6 +264,9 @@ async def fetchall(ctx: commands.Context, limit: int = 2000):
         return
 
     channel = ctx.guild.get_channel(intro_channel)
+    
+    if len(history.show_over_threshhold(1)) == 0:
+        history.delete_guild_data()
 
     msg = await ctx.send("Getting history... (this might take a while)")
     entire_history = await channel.history(limit=limit, oldest_first=True).flatten()

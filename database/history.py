@@ -148,6 +148,11 @@ class History(Database):
         if commit:
             self._commit_user()
 
+    def delete_guild_data(self):
+        self._check_tables()
+
+        self._delete_table(f"g_{self._guild_id}")
+
     def set_channel_intro(self, channel_id: int, commit: bool = True) -> None:
         self._settings["intro_channel"] = channel_id
 
